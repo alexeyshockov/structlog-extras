@@ -1,0 +1,29 @@
+[project]
+name = "structlog-extras"
+description = "Various structlog additions, mainly focused on better stdlib integration"
+version = "0.1.0"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Alexey Shokov" }]
+keywords = ["logging", "structlog"]
+dependencies = ["structlog"]
+
+[dependency-groups]
+dev = ["python-dotenv", "rich", "orjson"]
+
+[tool.ruff]
+line-length = 120
+format.docstring-code-format = true
+
+[tool.ruff.lint]
+select = [
+    "E", # pycodestyle errors
+    "W", # pycodestyle warnings
+    "F", # pyflakes
+    "I", # isort
+    "C", # flake8-comprehensions
+    "B", # flake8-bugbear
+    "Q", # flake8-quotes
+]
+[tool.ruff.lint.pydocstyle]
+convention = "google"
