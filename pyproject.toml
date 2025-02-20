@@ -1,7 +1,7 @@
 [project]
 name = "structlog-extras"
 description = "Various structlog additions, mainly focused on better stdlib integration"
-version = "0.1.0"
+version = "0.2.0"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Alexey Shokov" }]
@@ -9,7 +9,7 @@ keywords = ["logging", "structlog"]
 dependencies = ["structlog"]
 
 [dependency-groups]
-dev = ["python-dotenv", "rich", "orjson"]
+dev = ["python-dotenv", "rich", "orjson", "opentelemetry-exporter-otlp"]
 
 [tool.ruff]
 line-length = 120

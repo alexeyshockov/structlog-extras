@@ -9,7 +9,7 @@ def configure():
     import orjson
     from structlog.processors import CallsiteParameter as CsParam
 
-    from structlog_extras.stdlib import StructlogHandler
+    from structlog_extras.stdlib import StructlogForwarder
 
     structlog.configure(
         processors=[
@@ -28,8 +28,8 @@ def configure():
     )
 
     root_logger = logging.getLogger()
-    root_logger.addHandler(StructlogHandler())
-    root_logger.setLevel(logging.DEBUG)
+    root_logger.addHandler(StructlogForwarder())
+    root_logger.setLevel(logging.NOTSET)
 
 
 def main():
