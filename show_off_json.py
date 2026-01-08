@@ -35,7 +35,7 @@ def configure():
 def main():
     logging.getLogger("our.app").info("Hello, World!")
 
-    structured_logger: FilteringBoundLogger = structlog.get_logger("our.app")
+    structured_logger: FilteringBoundLogger = structlog.get_logger()
     structured_logger.info("Hello from structlog!", some_key="some_value")
 
     with bound_contextvars(another_key="another_value"):

@@ -1,6 +1,6 @@
 import logging
 from abc import ABC
-from collections.abc import Collection
+from collections.abc import Callable, Collection
 from io import TextIOBase
 from typing import BinaryIO, TextIO, cast, final
 
@@ -8,53 +8,11 @@ import structlog
 from structlog.typing import EventDict, Processor, ProcessorReturnValue
 
 __all__ = [
-    "configure_json_to_console",
     "merge_contextvars_to_record",
+    "remove_processors_meta",
     "StructlogForwarder",
     "ProcessorStreamHandler"
 ]
-
-
-def configure_json_to_console():
-    """
-    Default configuration, to output every log record as a JSON line to the console (stdout).
-    """
-    from sys import stdout
-
-    root_logger = logging.getLogger()
-    # Add context (bound) vars to all log records, not only structlog ones
-    root_logger.addFilter(merge_contextvars_to_record)
-    root_logger.setLevel(logging.INFO)
-
-    def json_renderer():
-        try:
-            import orjson
-
-            return stdout.buffer, structlog.processors.JSONRenderer(orjson.dumps)
-        except ImportError:
-            return stdout, structlog.processors.JSONRenderer()
-
-    structlog.configure(
-        processors=[
-            structlog.stdlib.render_to_log_args_and_kwargs
-        ],
-        wrapper_class=structlog.make_filtering_bound_logger(logging.DEBUG),
-        logger_factory=structlog.stdlib.LoggerFactory(),
-        cache_logger_on_first_use=True,
-    )
-
-    stream, renderer = json_renderer()
-    handler = ProcessorStreamHandler(stream, [
-        structlog.stdlib.ExtraAdder(),
-        structlog.stdlib.add_logger_name,
-        structlog.processors.add_log_level,
-        structlog.processors.TimeStamper(fmt="iso", utc=True),
-        structlog.processors.StackInfoRenderer(),
-        remove_processors_meta,
-        renderer,
-    ])
-
-    root_logger.addHandler(handler)
 
 
 def merge_contextvars_to_record(record: logging.LogRecord) -> bool:
@@ -116,10 +74,10 @@ class ProcessorHandler(logging.Handler, ABC):
 
         return ed
 
-    def handle(self, record: logging.LogRecord) -> None:
+    def handle(self, record: logging.LogRecord) -> bool:
         if self.level > record.levelno:
-            return
-        super().handle(record)
+            return False
+        return super().handle(record)
 
 
 @final
@@ -141,6 +99,9 @@ class StructlogForwarder(ProcessorHandler):
         self._logger = structlog.get_logger()
         if hasattr(self._logger, "flush"):
             self.flush = self._logger.flush
+
+    def createLock(self):
+        self.lock = None
 
     def emit(self, record: logging.LogRecord) -> None:
         try:
@@ -167,15 +128,22 @@ class ProcessorStreamHandler(ProcessorHandler):
         level: int = logging.NOTSET,
     ):
         super().__init__(processors, use_get_message=use_get_message, pass_foreign_args=pass_foreign_args, level=level)
-        self._stream_write = stream.write
-        if hasattr(stream, "flush"):
-            self.flush = stream.flush
+        self._stream_write: Callable[[str | bytes], int] = stream.write  # type: ignore[assignment]
+        self._stream_flush = stream.flush if hasattr(stream, "flush") else lambda: None
         self.terminator = "\n" if isinstance(stream, TextIOBase) else b"\n"
 
     def emit(self, record: logging.LogRecord) -> None:
         try:
-            rendered = self.process(record)
-            self._stream_write(rendered + self.terminator)
-            self.flush()
+            rendered: str | bytes = self.process(record)  # type: ignore[assignment]
+            log_line: str | bytes = rendered + self.terminator  # type: ignore[assignment]
+            self._stream_write(log_line)
+            self._stream_flush()
         except Exception:  # noqa
             self.handleError(record)
+
+    def flush(self) -> None:
+        if self.lock:
+            with self.lock:
+                self._stream_flush()
+        else:
+            self._stream_flush()

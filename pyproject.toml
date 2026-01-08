@@ -6,10 +6,18 @@ requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Alexey Shokov" }]
 keywords = ["logging", "structlog"]
-dependencies = ["structlog"]
+dependencies = ["structlog >=24.0"]
 
 [dependency-groups]
 dev = ["python-dotenv", "rich", "orjson", "opentelemetry-exporter-otlp"]
+
+[build-system]
+requires = ["uv_build>=0.9.10,<0.10.0"]
+build-backend = "uv_build"
+
+[tool.uv]
+build-backend.module-root = "" # Flat layout
+build-backend.module-name = "structlog_extras"
 
 [tool.ruff]
 line-length = 120

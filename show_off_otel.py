@@ -40,7 +40,7 @@ def main():
 
 if __name__ == "__main__":
     load_dotenv()
-    structlog_extras.stdlib.configure_json_to_console()
+    structlog_extras.use_stdlib_json_to_console()
     logging.getLogger().setLevel(logging.NOTSET)
     configure_otel()
     main()
