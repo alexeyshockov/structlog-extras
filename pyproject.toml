@@ -1,12 +1,30 @@
 [project]
 name = "structlog-extras"
 description = "Various structlog additions, mainly focused on better stdlib integration"
-version = "0.2.0"
+version = "0.3.0"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Alexey Shokov" }]
 keywords = ["logging", "structlog"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Typing :: Typed",
+    "Topic :: Software Development",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+]
 dependencies = ["structlog >=24.0"]
+
+# See https://docs.pypi.org/project_metadata/#general-url
+# See also https://daniel.feldroy.com/posts/2023-08-pypi-project-urls-cheatsheet
+[project.urls]
+Homepage = 'https://github.com/alexeyshockov/structlog-extras'
+Changelog = 'https://github.com/alexeyshockov/structlog-extras/blob/main/CHANGELOG.md'
 
 [dependency-groups]
 dev = ["python-dotenv", "rich", "orjson", "opentelemetry-exporter-otlp"]
