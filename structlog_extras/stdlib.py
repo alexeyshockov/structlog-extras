@@ -17,7 +17,9 @@ __all__ = [
 
 def merge_contextvars_to_record(record: logging.LogRecord) -> bool:
     """
-    Logging filter, to enrich the log record with the contextvars from structlog.
+    Logging filter, to enrich a stdlib log record with contextvars from structlog.
+
+    Same as passing all the contextvars to in `extra` when logging.
     """
     for var_name, val in structlog.contextvars.get_contextvars().items():
         if var_name in record.__dict__:

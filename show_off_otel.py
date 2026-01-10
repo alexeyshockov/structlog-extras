@@ -1,11 +1,10 @@
 import logging
 
 import structlog
+import structlog_extras.stdlib
 from dotenv import load_dotenv
 from structlog.contextvars import bound_contextvars
 from structlog.typing import FilteringBoundLogger
-
-import structlog_extras.stdlib
 
 
 # noinspection PyProtectedMember
@@ -24,6 +23,7 @@ def configure_otel():
     exporter = OTLPLogExporter()
     logger_provider.add_log_record_processor(BatchLogRecordProcessor(exporter))
 
+    # Add OTEL as another handler to the root logger
     logging.getLogger().addHandler(LoggingHandler())
 
 
@@ -40,7 +40,6 @@ def main():
 
 if __name__ == "__main__":
     load_dotenv()
-    structlog_extras.use_stdlib_json_to_console()
-    logging.getLogger().setLevel(logging.NOTSET)
+    structlog_extras.presets.stdlib_json(logging.NOTSET)
     configure_otel()
     main()
