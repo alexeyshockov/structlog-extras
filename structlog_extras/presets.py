@@ -1,5 +1,6 @@
 import logging
 from sys import stdout
+from typing import TextIO
 
 import structlog
 from structlog.processors import CallsiteParameter as CsParam
@@ -11,7 +12,7 @@ from .stdlib import merge_contextvars_to_record, ProcessorStreamHandler, remove_
 __all__ = ["stdlib_dev_console", "stdlib_json"]
 
 
-def stdlib_json(log_level: int = logging.INFO) -> None:
+def stdlib_json(min_log_level: int = logging.INFO) -> None:
     """
     Forward structlog to stdlib, output every log record as a JSON line to the console (stdout).
 
@@ -23,7 +24,7 @@ def stdlib_json(log_level: int = logging.INFO) -> None:
     root_logger = logging.getLogger()
     # Add context (bound) vars to all log records, not only structlog ones
     root_logger.addFilter(merge_contextvars_to_record)
-    root_logger.setLevel(log_level)
+    root_logger.setLevel(min_log_level)
 
     def json_renderer():
         try:
@@ -37,7 +38,7 @@ def stdlib_json(log_level: int = logging.INFO) -> None:
         processors=[
             structlog.stdlib.render_to_log_args_and_kwargs
         ],
-        wrapper_class=structlog.make_filtering_bound_logger(log_level),
+        wrapper_class=structlog.make_filtering_bound_logger(min_log_level),
         logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=True,
     )
@@ -58,7 +59,11 @@ def stdlib_json(log_level: int = logging.INFO) -> None:
     root_logger.addHandler(handler)
 
 
-def stdlib_dev_console(log_level: int = logging.INFO) -> None:
+def stdlib_dev_console(
+    min_log_level: int = logging.INFO,
+    stream: TextIO = stdout,
+    renderer: structlog.dev.ConsoleRenderer | None = None,
+) -> None:
     """
     Forward structlog to stdlib, output to stdout using structlog.dev.ConsoleRenderer.
 
@@ -67,18 +72,18 @@ def stdlib_dev_console(log_level: int = logging.INFO) -> None:
     root_logger = logging.getLogger()
     # Add context (bound) vars to all log records, not only structlog ones
     root_logger.addFilter(merge_contextvars_to_record)
-    root_logger.setLevel(log_level)
+    root_logger.setLevel(min_log_level)
 
     structlog.configure(
         processors=[
             structlog.stdlib.render_to_log_args_and_kwargs
         ],
-        wrapper_class=structlog.make_filtering_bound_logger(log_level),
+        wrapper_class=structlog.make_filtering_bound_logger(min_log_level),
         logger_factory=structlog.stdlib.LoggerFactory(),
         cache_logger_on_first_use=True,
     )
 
-    handler = ProcessorStreamHandler(stdout, [
+    handler = ProcessorStreamHandler(stream, [
         structlog.stdlib.add_logger_name,
         structlog.contextvars.merge_contextvars,
         structlog.stdlib.ExtraAdder(),
@@ -90,7 +95,7 @@ def stdlib_dev_console(log_level: int = logging.INFO) -> None:
             {CsParam.FILENAME, CsParam.LINENO, CsParam.MODULE, CsParam.FUNC_NAME}
         ),
         remove_processors_meta,
-        structlog.dev.ConsoleRenderer(),
+        renderer or structlog.dev.ConsoleRenderer(),
     ])
 
     root_logger.addHandler(handler)
