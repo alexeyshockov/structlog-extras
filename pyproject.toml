@@ -1,7 +1,7 @@
 [project]
 name = "structlog-extras"
 description = "Various structlog additions, mainly focused on better stdlib integration"
-version = "0.4.0"
+version = "0.5.0"
 requires-python = ">=3.10"
 license = { text = "MIT" }
 authors = [{ name = "Alexey Shokov" }]

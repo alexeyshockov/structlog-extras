@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+## [0.5.0] - 2026-01-11
+
+### Changed
+
+- **Breaking:** Renamed `log_level` parameter to `min_log_level` in `stdlib_json()` and `stdlib_dev_console()`
+
+### Added
+
+- `stdlib_dev_console()` now accepts optional `stream` and `renderer` parameters for customization
+
 ## [0.4.0] - 2026-01-10
 
 ### Changed
